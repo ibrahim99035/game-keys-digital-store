@@ -1,29 +1,157 @@
 version: '3.8'
 
 services:
+  # Main Application
   app:
-    build: .
-    container_name: egyptian-digital-store-app
-    restart: unless-stopped
-    env_file:
-      - .env
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://mongodb:27017/egyptian-digital-store
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     depends_on:
-      - mongo
+      - mongodb
+      - redis
     volumes:
-      - .:/usr/src/app
-      - /usr/src/app/node_modules
-
-  mongo:
-    image: mongo:7
-    container_name: egyptian-digital-store-mongo
+      - ./logs:/app/logs
+      - ./temp:/app/temp
     restart: unless-stopped
+    networks:
+      - app-network
+
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
     ports:
       - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password123
+      - MONGO_INITDB_DATABASE=egyptian-digital-store
     volumes:
-      - mongo_data:/data/db
+      - mongodb_data:/data/db
+      - ./docker/mongodb/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # Redis Cache (Optional)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - app-network
+    command: redis-server --appendonly yes
+
+  # MongoDB Express (Database Administration)
+  mongo-express:
+    image: mongo-express:latest
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=password123
+      - ME_CONFIG_MONGODB_URL=mongodb://admin:password123@mongodb:27017/
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=admin123
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # Redis Commander (Redis Administration)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    ports:
+      - "8082:8081"
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # Nginx Reverse Proxy (Production)
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - app
+    restart: unless-stopped
+    networks:
+      - app-network
+    profiles:
+      - production
+
+  # File Processing Worker (Optional)
+  file-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://mongodb:27017/egyptian-digital-store
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - WORKER_TYPE=file-processor
+    depends_on:
+      - mongodb
+      - redis
+    volumes:
+      - ./temp:/app/temp
+    restart: unless-stopped
+    networks:
+      - app-network
+    command: ["node", "src/workers/fileProcessor.js"]
+    profiles:
+      - workers
+
+  # Notification Worker (Optional)
+  notification-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://mongodb:27017/egyptian-digital-store
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - WORKER_TYPE=notification-processor
+    depends_on:
+      - mongodb
+      - redis
+    restart: unless-stopped
+    networks:
+      - app-network
+    command: ["node", "src/workers/notificationProcessor.js"]
+    profiles:
+      - workers
 
 volumes:
-  mongo_data:
+  mongodb_data:
     driver: local
+  redis_data:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge
+
+# Development override
+# docker-compose -f docker-compose.yml -f docker-compose.dev.yml up

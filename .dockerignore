@@ -1,8 +1,155 @@
-node_modules
-logs
-uploads
-temp
-coverage
+# Dependencies
+node_modules/
 npm-debug.log*
-.DS_Store
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+CHANGELOG.md
+LICENSE
+docs/
+
+# Development files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Testing
+tests/
+coverage/
+*.test.js
+*.spec.js
+jest.config.js
+test-results/
+
+# Build tools
+.eslintrc.js
+.prettierrc
+.babelrc
+webpack.config.js
+rollup.config.js
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+*.temp
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Docker
+Dockerfile
+docker-compose.yml
+docker-compose.dev.yml
+docker-compose.prod.yml
+.dockerignore
+
+# Development utilities
+nodemon.json
+.nodemonignore
+
+# Build outputs
+build/
+dist/
+out/
+
+# Cache
+.cache/
+.npm/
+.eslintcache
+
+# Uploads and user content
+uploads/
+files/
+assets/generated/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Archive files
+*.zip
+*.tar.gz
+*.rar
+
+# Backup files
+*.backup
+*.bak
+*.old
+
+# Local configuration
+config/local.js
+config/local.json
+
+# SSL certificates
+*.pem
+*.key
+*.cert
+*.crt
+
+# Monitoring
+.newrelic_agent.log
+newrelic_agent.log
+
+# IDE configuration
+.vscode/
+.idea/
+
+# Package managers
+package-lock.json
+yarn.lock
+
+# Development scripts
+scripts/dev/
+scripts/test/
+
+# Linting
+.eslintrc*
+.prettierrc*
+
+# TypeScript
+*.tsbuildinfo
+tsconfig.json
+
+# Serverless
+.serverless/
+
+# Firebase
+.firebase/
+firebase-debug.log
+
+# Sentry
+.sentryclirc
+
+# Performance
+.clinic/
+
+# Storybook
+.storybook/
+storybook-static/

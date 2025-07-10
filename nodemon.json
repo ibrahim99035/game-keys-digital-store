@@ -1,9 +1,37 @@
 {
-  "watch": ["src"],
-  "ext": "js,json",
-  "ignore": ["src/**/*.test.js", "src/**/*.spec.js"],
+  "watch": [
+    "src/**/*.js",
+    "config/**/*.js",
+    ".env"
+  ],
+  "ignore": [
+    "node_modules/**/*",
+    "tests/**/*",
+    "coverage/**/*",
+    "logs/**/*",
+    "temp/**/*",
+    "uploads/**/*",
+    "*.test.js",
+    "*.spec.js",
+    "public/**/*"
+  ],
+  "ext": "js,json,env",
   "exec": "node src/app.js",
   "env": {
-    "NODE_ENV": "development"
-  }
+    "NODE_ENV": "development",
+    "DEBUG": "app:*"
+  },
+  "restartable": "rs",
+  "colours": true,
+  "legacyWatch": false,
+  "delay": 1000,
+  "verbose": true,
+  "events": {
+    "restart": "echo 'App restarted due to file changes'",
+    "crash": "echo 'App crashed - waiting for file changes before restart'",
+    "start": "echo 'App started'",
+    "quit": "echo 'App quit'"
+  },
+  "signal": "SIGTERM",
+  "stdout": false
 }
